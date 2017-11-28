@@ -99,8 +99,6 @@ func (p NFIPTablesPlugin) GraphDefinition() (a map[string]mp.Graphs) {
 	return graphdef
 }
 
-// MetricKeyPrefix interface for PluginWithPrefix
-
 // Do the plugin
 func Do() {
 	optPrefix := flag.String("metric-key-prefix", "nfiptables", "Prefix")
