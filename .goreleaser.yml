@@ -1,0 +1,15 @@
+project_name: mackerel-plugin-nfiptables
+builds:
+  - binary: mackerel-plugin-nfiptables
+    ldflags: -s -w
+    goos:
+      - linux
+    goarch:
+      - arm
+      - 386
+      - amd64
+archive:
+  name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+  format: tar.gz
+  files:
+    - LICENSE
