@@ -5,7 +5,10 @@ GOHOSTARCH := $(shell $(GO) env GOHOSTARCH)
 
 DEP ?= $(GOPATH)/bin/dep
 GOX ?= $(GOPATH)/bin/gox
+GORELEASER ?= $(GOPATH)/bin/goreleaser
+GHR ?= $(GOPATH)/bin/ghr
 STATICCHECK ?= $(GOPATH)/bin/staticcheck
+LATEST_TAG = $(shell git describe --abbrev=0 --tags)
 pkgs = $(shell $(GO) list ./... | grep -v /vendor/)
 arch = "arm 386 amd64"
 os = "freebsd linux netbsd openbsd"
@@ -35,20 +38,22 @@ build:
 	@$(GO) build .
 
 cross:
-	@mkdir -pv target
 	@echo ">> cross building binaries"
-	@$(GOX) -arch=$(arch) -os=$(os) -output=./target/{{.Dir}}_{{.OS}}_{{.Arch}}
+	@$(GORELEASER) --skip-publish
 
-zip:
+release:
 	@echo ">> building release zip archive"
-	@mkdir -pv target/release
-	@for i in $$(find target -type f -printf '%f\n'); do zip ./target/release/$$i.zip ./target/$$i; done
+	@for i in $$(find ./dist -mindepth 1 -type d -printf '%f\n'); do zip -j ./dist/$$i.zip ./dist/$$i/*; done
+	@for i in $$(find ./dist -mindepth 1 -name '*.zip' -type f -printf '%f\n'); do $(GHR) -replace $(LATEST_TAG) ./dist/$$i; done
+
+clean:
+	@rm -rf ./dist
 
 $(GOPATH)/bin/dep:
 	@GOOS= GOARCH= $(GO) get -u github.com/golang/dep/cmd/dep
 
-$(GOPATH)/bin/gox:
-	@GOOS= GOARCH= $(GO) get -u github.com/mitchellh/gox
+$(GOPATH)/bin/goreleaser:
+	@GOOS= GOARCH= $(GO) get -u github.com/goreleaser/goreleaser
 
 $(GOPATH)/bin/staticcheck:
 	@GOOS= GOARCH= $(GO) get -u honnef.co/go/tools/cmd/staticcheck
